@@ -1,0 +1,55 @@
+Make sure you are superuser for multi company
+
+1. upload company csv withe external id and id
+2. upload res.user active and inactive with old id, and old partner id
+MARK ALL NURSES IN RES.USERS
+3. run script pmg record - get csv and run script
+4. then run script for res.partners
+5. then run script new model
+6. then run alianza note script
+
+         
+6. upload helpdesk.team  (display name is helpdesk team)
+7. upload the ticket types old=id
+8. helpdesk stages
+9. script for helpdesk.ticket,without archived
+
+March 25 cut off
+
+scripts:
+\copy (Select * From wisesol_pmg) To 'cra_pmg.csv' With CSV DELIMITER ',' HEADER
+split by company
+\copy (Select * From res_partner where company_id =1 ) To 'cra_partner_for_cra.csv' With CSV DELIMITER ',' HEADER
+\copy (Select * From res_partner where company_id =6 ) To 'cra_partner_for_rse.csv' With CSV DELIMITER ',' HEADER
+\copy (Select * From res_partner where company_id =7 ) To 'cra_partner_for_insalud.csv' With CSV DELIMITER ',' HEADER
+\copy (Select * From res_partner where company_id =5 ) To 'cra_partner_for_alianza.csv' With CSV DELIMITER ',' HEADER
+\copy (Select * From res_partner where company_id is NULL ) To 'cra_partner_for_none.csv' With CSV DELIMITER ',' HEADER
+ticket
+\copy (Select * From helpdesk_ticket where create_date >= '2023-01-01 00:00:00' and create_date < '2024-01-01 00:00:00' and active = True) To 'cra_helpdesk_ticket23.csv' With CSV DELIMITER ',' HEADER
+new model(alianza)
+\copy (Select id,x_studio_notes From x_qualitymetrics where x_studio_notes IS DISTINCT FROM NULL) To 'cra_new_model.csv' With CSV DELIMITER ',' HEADER
+
+
+
+everything is installed import them on clean dataabse and run scripts
+
+
+UDPATE MAR 28:
+pmg script ----------- DONE
+res.partner script --- DONE
+qualitymetrics script- DONE
+Alianza note script -- DONE
+helpdesk.ticket ------ TEST
+
+
+
+
+For log notes:
+
+we will update the ids for helpdesk.ticket, stage, team, and res.partner:
+
+        UPDATE helpdesk_ticket SET id = CAST(x_my_id AS integer) where x_my_id is not null;
+
+        then: alter sequence helpdesk_ticket_id_seq restart with 123123124;
+
+to update the ids to match the v13 and get the sql query from v13 and psql -f filename to the v16
